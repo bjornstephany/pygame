@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Callable
 from halma import *
+from treelib import Tree
 
 # TO DO
 # Implement maxn search to a depth of 2 (looking 2 moves ahead for your team).
