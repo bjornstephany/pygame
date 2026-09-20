@@ -8,8 +8,8 @@ from treelib import Tree
 # Implement branch ordering using heuristics.
 # Implement Alpha-Beta pruning to avoid searching hopeless branches.
 # Optimise your code so that it runs efficiently.
-# When the binary flag is set the code should visualize the search tree using treelib
-# and output the result to Team<X>_Tree.png
+# When the binary flag is set the code should visualize the search 
+# tree using treelib and output the result to Team<X>_Tree.png
 
 def AI_Player_Team3(
         board: List[List[int]],
@@ -17,22 +17,21 @@ def AI_Player_Team3(
         visualize_tree: bool
 ) -> Tuple[str, str]:
 
-# CHECK IF PLAYER IS VALID
+    # CHECK IF PLAYER IS VALID
     if player not in [1, 2, 3, 4]:
             raise ValueError(f"Player {player} is not a valid player")
 
-# CHECK IF BOARD IS 5x5
+    # CHECK IF BOARD IS 5x5
     if len(board) != 5 or any(len(row) != 5 for row in board):
             raise ValueError("Board must be 5 by 5")
 
 # FUNCTION ALTERNATING WHICH PLAYER'S TURN IT IS 
-def get_next_player(which_player):
-        if which_player == 4:
+def get_next_player(current_player):
+        if current_player == 4:
                 return 1
-        return which_player + 1
+        return current_player + 1
 
-        
-    # SOME LOGIC HERE TO DO
+# SOME LOGIC HERE TO DO
 
 def get_legal_moves(
         board: List[List[int]],

@@ -261,7 +261,3 @@ def random_bot(
     new_reference: str = chr(ord("A") + newPos[1]) + str(newPos[0] + 1)
 
     return old_reference, new_reference
-    
-    
-    
-    

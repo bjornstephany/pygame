@@ -9,8 +9,7 @@ from halma import (
     parse_position,
     random_bot,
     win_cells_all,
-    initial_pos,
-    illegal_bot,
+    initial_pos
 )
 
 MAXIMUM_MOVE_LIMIT: int = 100  # Total turns across all four players, including skipped turns.
