@@ -22,29 +22,14 @@ initial_pos: List[List[int]] = [
     [4,4,0,3,3]
 ]
 
-initial_pos_1v1: List[List[int]] = [
-    [1,1,0,0,0],
-    [1,0,0,0,0],
-    [0,0,0,0,0],
-    [0,0,0,0,2],
-    [0,0,0,2,2]
-]
-
-
 '''
-Win cells per player for 1v1v1v1 and 1v1
+Win cells per player for 1v1v1v1
 '''
 win_cells_all: Dict[int, List[Tuple[int, int]]] = {
     1: [(3, 4), (4, 3), (4, 4)],  # E4, D5, E5
     2: [(3, 0), (4, 0), (4, 1)],  # A4, A5, B5
     3: [(0, 0), (0, 1), (1, 0)],  # A1, B1, A2
     4: [(0, 3), (0, 4), (1, 4)]   # D1, E1, E2
-}
-
-
-win_cells_1v1: Dict[int, List[Tuple[int, int]]] = {
-    1: [(3, 4), (4, 3), (4, 4)],  # E4, D5, E5
-    2: [(0, 0), (0, 1), (1, 0)]   # A1, B1, A2
 }
 
 '''
