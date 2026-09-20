@@ -24,6 +24,13 @@ def AI_Player_Team3(
 # CHECK IF BOARD IS 5x5
     if len(board) != 5 or any(len(row) != 5 for row in board):
             raise ValueError("Board must be 5 by 5")
+
+# FUNCTION ALTERNATING WHICH PLAYER'S TURN IT IS 
+def get_next_player(which_player):
+        if which_player == 4:
+                return 1
+        return which_player + 1
+
         
     # SOME LOGIC HERE TO DO
 
