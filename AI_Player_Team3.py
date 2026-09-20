@@ -26,19 +26,11 @@ def AI_Player_Team3(
             raise ValueError("Board must be 5 by 5")
         
     # SOME LOGIC HERE TO DO
-    
-    # CONVERT COORDINATES TO BOARD NOTATION
-    old_reference: str = chr(ord("A") + oldPos[1]) + str(oldPos[0] + 1)
-    new_reference: str = chr(ord("A") + newPos[1]) + str(newPos[0] + 1)
-    
-    return old_reference, new_reference
-
 
 def get_legal_moves(
         board: List[List[int]],
         player: int
-) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
-        
+) ->List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         # INITIALIZE EMPTY LIST FOR LEGAL MOVES
         legal_moves: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
         
@@ -59,3 +51,5 @@ def get_legal_moves(
                                 
         if not legal_moves:
                 raise ValueError(f"Player {player} has no legal moves")
+            
+        return legal_moves
