@@ -152,8 +152,6 @@ def check_win_condition(
 
     if all_players:
         win_cells: Dict[int, List[Tuple[int, int]]] = win_cells_all
-    else:
-        win_cells = win_cells_1v1
 
     active_players: List[int] = list(win_cells.keys())
     winners: List[int] = []
@@ -263,32 +261,6 @@ def random_bot(
     new_reference: str = chr(ord("A") + newPos[1]) + str(newPos[0] + 1)
 
     return old_reference, new_reference
-
-def illegal_bot(
-    board: List[List[int]],
-    player: int,
-    visualize_tree: bool
-) -> Tuple[str, str]:
-    if player not in [1, 2, 3, 4]:
-        raise ValueError(f"Player {player} is not valid")
-
-    for row in range(5):
-        for column in range(5):
-            if board[row][column] == player:
-                position: str = (
-                    chr(ord("A") + column)
-                    + str(row + 1)
-                )
-
-                if visualize_tree:
-                    print(
-                        f"Illegal bot attempts: "
-                        f"{position} -> {position}"
-                    )
-
-                return position, position
-
-    raise ValueError(f"Player {player} has no pieces")
     
     
     
