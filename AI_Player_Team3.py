@@ -4,9 +4,6 @@ import subprocess
 from halma import *
 from treelib import Tree
 
-
-TEAM_NUMBER = 3
-
 MY_MOVES_AHEAD = 2
 SEARCH_PLIES = 4 * (MY_MOVES_AHEAD - 1) + 1
 
@@ -315,8 +312,8 @@ def AI_Player_Team3(
 
 def save_tree():
 
-    dot_name = f"Team{TEAM_NUMBER}_Tree.dot"
-    png_name = f"Team{TEAM_NUMBER}_Tree.png"
+    dot_name = f"Team3_Tree.dot"
+    png_name = f"Team3_Tree.png"
 
     tree.to_graphviz(
         filename=dot_name,
