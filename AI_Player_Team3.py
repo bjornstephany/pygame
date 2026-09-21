@@ -13,7 +13,7 @@ SCORE_TOTAL = 100.0
 tree: Optional[Tree] = None
 node_counter = 0
 
-
+# Helper functions
 def get_next_player(player):
     if player == 4:
         return 1
