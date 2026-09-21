@@ -62,6 +62,7 @@ def get_legal_moves(
 
     return moves
 
+# Evaluation Function (Heuristic approach)
 def square_value(position: Tuple[int, int], player: int) -> int:
     best_distance = 8
 
@@ -119,6 +120,7 @@ def order_moves(moves, player):
 def format_scores(scores) -> str:
     return "(" + ", ".join(f"{score:.1f}" for score in scores) + ")"
 
+# Max^n search function with shallow pruning
 def maxn(
     board,
     player,
