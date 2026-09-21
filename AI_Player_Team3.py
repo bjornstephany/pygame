@@ -19,11 +19,9 @@ def get_next_player(player):
         return 1
     return player + 1
 
-
 def to_reference(position: Tuple[int, int]) -> str:
     row, column = position
     return chr(ord("A") + column) + str(row + 1)
-
 
 def get_legal_moves(
     board: List[List[int]],
@@ -64,7 +62,6 @@ def get_legal_moves(
 
     return moves
 
-
 def square_value(position: Tuple[int, int], player: int) -> int:
     best_distance = 8
 
@@ -77,7 +74,6 @@ def square_value(position: Tuple[int, int], player: int) -> int:
 
     return 8 - best_distance
 
-
 def progress(board: List[List[int]], player: int) -> int:
     total = 0
 
@@ -88,7 +84,6 @@ def progress(board: List[List[int]], player: int) -> int:
                 total += square_value((row, column), player)
 
     return total
-
 
 def evaluate(board: List[List[int]]) -> List[float]:
     scores = []
@@ -102,7 +97,6 @@ def evaluate(board: List[List[int]]) -> List[float]:
         scores[i] = SCORE_TOTAL * scores[i] / total
 
     return scores
-
 
 def order_moves(moves, player):
     ordered_moves = []
@@ -124,7 +118,6 @@ def order_moves(moves, player):
 
 def format_scores(scores) -> str:
     return "(" + ", ".join(f"{score:.1f}" for score in scores) + ")"
-
 
 def maxn(
     board,
@@ -253,7 +246,6 @@ def maxn(
 
     return best_scores, best_move
 
-
 def AI_Player_Team3(
     board: List[List[int]],
     player: int,
@@ -308,7 +300,6 @@ def AI_Player_Team3(
         to_reference(old_position),
         to_reference(new_position)
     )
-
 
 def save_tree():
 
