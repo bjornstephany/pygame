@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Callable
 import pygame
-import AI_Player_Team3
+from AI_Player_Team3 import *
 
 from halma import (
     check_legal_move,

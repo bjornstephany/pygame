@@ -4,10 +4,6 @@ import subprocess
 from halma import *
 from treelib import Tree
 
-MY_MOVES_AHEAD = 2
-SEARCH_PLIES = 4 * (MY_MOVES_AHEAD - 1) + 1
-
-TREE_DRAW_PLIES = 2
 SCORE_TOTAL = 100.0
 
 tree: Optional[Tree] = None
@@ -180,7 +176,7 @@ def maxn(
 
         child_id = None
 
-        if parent_id is not None and ply < TREE_DRAW_PLIES:
+        if parent_id is not None and ply < 2:
 
             node_counter += 1
             child_id = node_counter
@@ -286,7 +282,7 @@ def AI_Player_Team3(
     scores, best_move = maxn(
         work_board,
         player,
-        SEARCH_PLIES,
+        5,
         0,
         {},
         root_id,
