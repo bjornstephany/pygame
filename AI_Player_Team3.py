@@ -1,5 +1,4 @@
 from typing import List, Optional, Tuple
-import subprocess
 
 from halma import *
 from treelib import Tree
@@ -301,29 +300,103 @@ def AI_Player_Team3(
 
 def save_tree():
 
-    dot_name = f"Team3_Tree.dot"
     png_name = f"Team3_Tree.png"
 
-    tree.to_graphviz(
-        filename=dot_name,
-        shape="box"
+    save_tree_png(png_name)
+
+
+def save_tree_png(png_name: str) -> None:
+    import pygame
+
+    if tree is None:
+        return
+
+    pygame.font.init()
+
+    font = pygame.font.Font(None, 22)
+
+    nodes = list(tree.all_nodes_itr())
+
+    node_padding_x = 14
+    node_height = 34
+    x_gap = 80
+    y_gap = 18
+    margin = 30
+
+    node_width = max(font.size(str(node.tag))[0] for node in nodes)
+    node_width += node_padding_x * 2
+
+    positions = {}
+    next_leaf_y = 0
+
+    def place_node(node_id, depth):
+        nonlocal next_leaf_y
+
+        children = tree.children(node_id)
+
+        if len(children) == 0:
+            y = next_leaf_y
+            next_leaf_y += node_height + y_gap
+        else:
+            child_ys = [
+                place_node(child.identifier, depth + 1)
+                for child in children
+            ]
+            y = (child_ys[0] + child_ys[-1]) // 2
+
+        x = depth * (node_width + x_gap)
+        positions[node_id] = (x, y)
+
+        return y
+
+    place_node(tree.root, 0)
+
+    max_x = max(x for x, unused_y in positions.values()) + node_width
+    max_y = max(y for unused_x, y in positions.values()) + node_height
+
+    surface = pygame.Surface(
+        (max_x + margin * 2, max_y + margin * 2)
     )
+    surface.fill((255, 255, 255))
 
-    try:
-        subprocess.run(
-            [
-                "dot",
-                "-Grankdir=LR",
-                "-Tpng",
-                dot_name,
-                "-o",
-                png_name
-            ],
-            check=True
+    line_color = (80, 80, 80)
+    box_color = (245, 247, 251)
+    border_color = (30, 39, 55)
+    text_color = (30, 39, 55)
+
+    for node in nodes:
+        parent_id = node.predecessor(tree.identifier)
+
+        if parent_id is None:
+            continue
+
+        parent_x, parent_y = positions[parent_id]
+        child_x, child_y = positions[node.identifier]
+
+        start = (
+            margin + parent_x + node_width,
+            margin + parent_y + node_height // 2
+        )
+        end = (
+            margin + child_x,
+            margin + child_y + node_height // 2
         )
 
-    except Exception as error:
-        print(
-            f"Could not make the PNG "
-            f"(is Graphviz installed?): {error}"
+        pygame.draw.line(surface, line_color, start, end, 2)
+
+    for node in nodes:
+        x, y = positions[node.identifier]
+        rect = pygame.Rect(
+            margin + x,
+            margin + y,
+            node_width,
+            node_height
         )
+
+        pygame.draw.rect(surface, box_color, rect)
+        pygame.draw.rect(surface, border_color, rect, 2)
+
+        text = font.render(str(node.tag), True, text_color)
+        surface.blit(text, text.get_rect(center=rect.center))
+
+    pygame.image.save(surface, png_name)
