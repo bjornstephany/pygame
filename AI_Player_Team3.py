@@ -112,6 +112,10 @@ def order_moves(moves, player):
 
     return [move for gain, move in ordered_moves]
 
+
+def format_scores(scores) -> str:
+    return "(" + ", ".join(f"{score:.1f}" for score in scores) + ")"
+
 # Max^n search function with shallow pruning
 def maxn(
     board,
@@ -134,6 +138,10 @@ def maxn(
     )
 
     if key in seen:
+
+        if parent_id is not None:
+            tree.get_node(parent_id).tag += " [repeat]"
+
         return seen[key], None
 
     moves = get_legal_moves(board, player)
@@ -156,7 +164,7 @@ def maxn(
     best_move = None
     was_pruned = False
 
-    for move in moves:
+    for index, move in enumerate(moves):
 
         old_position, new_position = move
 
@@ -205,6 +213,9 @@ def maxn(
         board[new_row][new_column] = 0
         board[old_row][old_column] = player
 
+        if child_id is not None:
+            tree.get_node(child_id).tag += " -> " + format_scores(scores)
+
         if (
             best_scores is None
             or scores[player - 1] > best_scores[player - 1]
@@ -215,7 +226,17 @@ def maxn(
         maximum_possible = SCORE_TOTAL - parent_best
 
         if best_scores[player - 1] >= maximum_possible - 1e-9:
+
             was_pruned = True
+
+            if parent_id is not None:
+                skipped = len(moves) - index - 1
+
+                if skipped > 0:
+                    tree.get_node(parent_id).tag += (
+                        f" [pruned {skipped} moves]"
+                    )
+
             break
 
     if not was_pruned:
