@@ -13,7 +13,7 @@ from halma import (
 )
 
 MAXIMUM_MOVE_LIMIT: int = 100  # Total turns across all four players, including skipped turns.
-VISUALIZE_SEARCH_TREE: bool = False # This is here to match the function signature, the random bot does not visualize anything 
+VISUALIZE_SEARCH_TREE: bool = True # This is here to match the function signature, the random bot does not visualize anything 
 BOT_DELAY_MS: int = 450
 
 INITIAL_BOARD: List[List[int]] = initial_pos
