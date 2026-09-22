@@ -14,6 +14,17 @@ def get_next_player(player):
         return 1
     return player + 1
 
+def has_any_player_won(board):
+    for player in [1, 2, 3, 4]:
+        won = True
+        for row, column in win_cells_all[player]:
+            if board[row][column] != player:
+                won = False
+                break
+        if won:
+            return True
+    return False
+
 def to_reference(position: Tuple[int, int]) -> str:
     row, column = position
     return chr(ord("A") + column) + str(row + 1)
@@ -127,7 +138,7 @@ def maxn(
 ):
     global node_counter
 
-    if plies_left == 0:
+    if plies_left == 0 or has_any_player_won(board):
         return evaluate(board), None
 
     key = (
