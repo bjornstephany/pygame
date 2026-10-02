@@ -7,7 +7,9 @@ from sklearn.tree import DecisionTreeClassifier
 ANSWER_COLUMN = "Class"
 NUMBER_OF_TREES = 50
 
-# each tree only gets to see 80% of the bean rows (cross-validation) and 60% of the measurement columns
+# Each tree only gets to see 80% of the bean rows (picked randomly with replacement allowed) 
+# and each tree only trains on 60% of the 16 measurement columns. This is done so that each of
+# the 50 trees don't all look the same with the same data. 
 SAMPLE_FRACTION = 0.8     
 FEATURE_FRACTION = 0.6    
  
