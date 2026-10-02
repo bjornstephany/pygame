@@ -14,18 +14,16 @@ FEATURE_FRACTION = 0.6
 # Loading the csv data into tables
 train_data = pd.read_csv("dry_bean_train.csv")
 test_data = pd.read_csv("dry_bean_test.csv")
-feature_columns = train_data.drop(columns=["Class"])
+feature_columns = [col for col in train_data.columns if col != ANSWER_COLUMN]
  
 attributes_train_full = train_data[feature_columns].values
 bean_type_train_full = train_data[ANSWER_COLUMN].values
-
 attributes_test_full = test_data[feature_columns].values
  
  
-# ---- Our own cross-validation. We reuse this same function for both the
-# single tree AND the forest, by passing in a different "make_predictions"
-# function each time - that function just has to take some training beans
-# and some test beans, and return a guess for every test bean. ----
+# Cross-validation function that we use for the single tree and a forest by 
+# taking in some training beans and some test beans and then returning a guess for 
+# the type of every test beans. 
 def cross_validate(attributes, bean_type, k, make_predictions):
     row_numbers = list(range(len(attributes)))
     np.random.shuffle(row_numbers)
@@ -45,16 +43,14 @@ def cross_validate(attributes, bean_type, k, make_predictions):
     return sum(accuracies) / len(accuracies)
  
  
-# ---- Step 1: a single decision tree ----
+# "make_predictions" function but only for a single tree
 def tree_predictions(attributes_train, bean_type_train, attributes_test):
     tree = DecisionTreeClassifier(max_depth=10)
     tree.fit(attributes_train, bean_type_train)
     return tree.predict(attributes_test)
  
  
-# ---- Step 2: a whole forest. Each tree only gets to see a random slice of
-# beans (some repeated, some left out - that's "bagging") and a random slice
-# of measurements, so every tree ends up a little different. ----
+# Building the forest; total 50 times as once per tree
 def train_forest(attributes, bean_type):
     number_of_rows = len(attributes)
     number_of_columns = attributes.shape[1]
@@ -71,8 +67,7 @@ def train_forest(attributes, bean_type):
     return forest
  
  
-# Ask every tree in the forest for its guess, then go with whichever ANSWER
-# got the most votes.
+# Ask every tree in the forest for its prediction. Then we decide whichever answer got the most votes.
 def predict_with_forest(forest, attributes):
     votes = np.array([tree.predict(attributes[:, columns]) for tree, columns in forest])
  
@@ -83,19 +78,18 @@ def predict_with_forest(forest, attributes):
  
     return np.array(predictions)
  
- 
+ # "make_predictions" function but only for an entire forest
 def forest_predictions(attributes_train, bean_type_train, attributes_test):
     forest = train_forest(attributes_train, bean_type_train)
     return predict_with_forest(forest, attributes_test)
  
  
-# ---- Check how good each one really is, using our own cross-validation ----
 tree_score = cross_validate(attributes_train_full, bean_type_train_full, k=5, make_predictions=tree_predictions)
 forest_score = cross_validate(attributes_train_full, bean_type_train_full, k=5, make_predictions=forest_predictions)
 print("Single tree accuracy:", round(tree_score, 4))
 print("Forest accuracy:", round(forest_score, 4))
  
-# ---- Train the real forest on ALL the training beans, predict the mystery ones ----
+# This trains one real and final forest on all the training beans and uses that to guess the type of the unknown test beans
 final_forest = train_forest(attributes_train_full, bean_type_train_full)
 test_predictions = predict_with_forest(final_forest, attributes_test_full)
  
