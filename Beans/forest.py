@@ -14,10 +14,11 @@ FEATURE_FRACTION = 0.6
 # Loading the csv data into tables
 train_data = pd.read_csv("dry_bean_train.csv")
 test_data = pd.read_csv("dry_bean_test.csv")
-feature_columns = [col for col in train_data.columns if col != ANSWER_COLUMN]
+feature_columns = train_data.drop(columns=["Class"])
  
 attributes_train_full = train_data[feature_columns].values
 bean_type_train_full = train_data[ANSWER_COLUMN].values
+
 attributes_test_full = test_data[feature_columns].values
  
  
