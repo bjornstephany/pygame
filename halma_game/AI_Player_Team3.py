@@ -1,6 +1,6 @@
 from typing import List, Optional, Tuple
 
-from halma import *
+from halma_game.halma import *
 from treelib import Tree
 
 SCORE_TOTAL = 100.0

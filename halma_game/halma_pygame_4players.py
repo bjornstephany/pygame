@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional, Tuple, Callable
 import pygame
-from AI_Player_Team3 import *
+from halma_game.AI_Player_Team3 import *
 
-from halma import (
+from halma_game.halma import (
     check_legal_move,
     check_win_condition,
     move,
