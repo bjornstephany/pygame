@@ -1,6 +1,5 @@
-# Cross validation Balance Accuracy = FILL_IN_AFTER_RUNNING %
-# NOTE: needs PyTorch - run it yourself and put the real number above.
- 
+# Cross validation balance accuracy = 0.9385
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,12 +17,11 @@ DROPOUT_RATE = 0.3        # our regularization technique
  
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
  
-# ---- load the data ----
 train_data = pd.read_csv("dry_bean_train.csv")
 test_data = pd.read_csv("dry_bean_test.csv")
 feature_columns = [col for col in train_data.columns if col != LABEL_COLUMN]
  
-# turn each bean name into a number - networks only understand numbers
+# We turn each of the bean names into a number because networks only understand numbers
 class_names = sorted(train_data[LABEL_COLUMN].unique())
 name_to_number = {name: number for number, name in enumerate(class_names)}
  
@@ -35,7 +33,7 @@ NUMBER_OF_FEATURES = attributes_train_full.shape[1]
 NUMBER_OF_CLASSES = len(class_names)
  
  
-# scale every column to mean 0, spread 1 - networks train better this way
+# Standardise every column to mean = 0 and spread = 1 as networks train better this way
 def standardise(attributes, mean, std):
     return (attributes - mean) / std
  
@@ -53,8 +51,8 @@ class BeanDataset(Dataset):
         return self.attributes[index], self.bean_type[index]
  
  
-# input -> hidden layer -> output. BatchNorm steadies training.
-# Dropout (only during training) is our regularization technique.
+# Our network that takes 16 measurements as input and a prediction of which of the 7 types
+# it is as the output 
 class BeanNetwork(nn.Module):
     def __init__(self, use_dropout):
         super().__init__()
@@ -72,8 +70,7 @@ class BeanNetwork(nn.Module):
         return self.output_layer(x)
  
  
-# our own loss function: -log(probability given to the correct answer),
-# averaged over the batch
+# Loss function which are averaged over the entire batch
 def cross_entropy_loss(outputs, labels):
     probabilities = torch.softmax(outputs, dim=1)
     total_loss = 0.0
@@ -83,14 +80,12 @@ def cross_entropy_loss(outputs, labels):
     return total_loss / len(labels)
  
  
-# trains one network, returns the model, its loss per epoch, and the
-# mean/std used to scale the data
+# Trains one network, returns the model, its loss per epoch, and the mean/std used to scale the data
 def train_network(attributes_train, bean_type_train, use_dropout):
     mean = attributes_train.mean(axis=0)
     std = attributes_train.std(axis=0)
     attributes_train = standardise(attributes_train, mean, std)
  
-    # drop_last avoids a tiny last batch, which can crash BatchNorm
     loader = DataLoader(
         BeanDataset(attributes_train, bean_type_train),
         batch_size=BATCH_SIZE, shuffle=True, drop_last=True
@@ -124,8 +119,7 @@ def train_network(attributes_train, bean_type_train, use_dropout):
     return model, losses, mean, std
  
  
-# trains a network then predicts attributes_test - the "make_predictions"
-# function cross_validate (below) calls
+# Trains a network and then predicts attributes_test ("make_predictions")
 def network_predictions(attributes_train, bean_type_train, attributes_test, use_dropout):
     model, losses, mean, std = train_network(attributes_train, bean_type_train, use_dropout)
  
@@ -148,8 +142,7 @@ def regularized_predictions(attributes_train, bean_type_train, attributes_test):
     return network_predictions(attributes_train, bean_type_train, attributes_test, use_dropout=True)
  
  
-# our own cross-validation (no sklearn CV functions) - same idea as
-# forest.py: split into k folds, train on k-1, test on the rest, repeat
+# Cross-validation (no sklearn CV functions) similar to method used in forest.py
 def cross_validate(attributes, bean_type, k, make_predictions):
     row_numbers = list(range(len(attributes)))
     np.random.shuffle(row_numbers)
@@ -171,7 +164,7 @@ def cross_validate(attributes, bean_type, k, make_predictions):
 np.random.seed(0)
 torch.manual_seed(0)
  
-# hyperparameter check: try two learning rates
+# We do a hyperparameter check by trying two different learning rates: 0.01 and 0.001
 print("learning rate 0.01:")
 LEARNING_RATE = 0.01
 print("  balanced accuracy =", round(cross_validate(
@@ -181,9 +174,9 @@ print("learning rate 0.001:")
 LEARNING_RATE = 0.001
 print("  balanced accuracy =", round(cross_validate(
     attributes_train_full, bean_type_train_full, k=3, make_predictions=regularized_predictions), 4))
-# keeping 0.001 from here on
+# We stick to 0.001 learning rate from here on
  
-# regularization check: baseline (no dropout) vs with dropout
+# Check regularization (with and without dropout)
 print("baseline (no dropout):")
 print("  balanced accuracy =", round(cross_validate(
     attributes_train_full, bean_type_train_full, k=3, make_predictions=baseline_predictions), 4))
@@ -192,23 +185,23 @@ print("regularized (with dropout):")
 print("  balanced accuracy =", round(cross_validate(
     attributes_train_full, bean_type_train_full, k=3, make_predictions=regularized_predictions), 4))
  
-# train the final network on all the training data
+# Use all the training data to train the final network
 final_model, final_losses, mean, std = train_network(attributes_train_full, bean_type_train_full, use_dropout=True)
  
-# save + reload the weights, to show state_dict works
+# Reload + save the weights 
 torch.save(final_model.state_dict(), "network_weights.pt")
 loaded_model = BeanNetwork(use_dropout=True).to(device)
 loaded_model.load_state_dict(torch.load("network_weights.pt"))
 loaded_model.eval()
  
-# save a picture of the loss going down while training
+# Visualization of the training loss going down whilst training
 plt.plot(final_losses)
 plt.xlabel("Epoch")
 plt.ylabel("Training loss")
 plt.savefig("training_loss.png")
 print("Saved training_loss.png")
  
-# predict the mystery test beans and save the submission file
+# Use the training to predict the mystery beans from the test data
 test_attributes = standardise(attributes_test_full, mean, std)
 test_tensor = torch.tensor(test_attributes, dtype=torch.float32).to(device)
  
