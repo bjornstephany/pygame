@@ -1,7 +1,5 @@
 # Cross validation Balance Accuracy = FILL_IN_AFTER_RUNNING %
-# NOTE: this needs PyTorch, which isn't available where this was written,
-# so it hasn't been run yet. Run it yourself, then put the real number
-# that gets printed for "Regularized" on the line above.
+# NOTE: needs PyTorch - run it yourself and put the real number above.
  
 import numpy as np
 import pandas as pd
@@ -20,14 +18,12 @@ DROPOUT_RATE = 0.3        # our regularization technique
  
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
  
-# ---- Load the data ----
+# ---- load the data ----
 train_data = pd.read_csv("dry_bean_train.csv")
 test_data = pd.read_csv("dry_bean_test.csv")
 feature_columns = [col for col in train_data.columns if col != LABEL_COLUMN]
  
-# A network only understands numbers, so turn each bean-type NAME into a
-# number (0, 1, 2, ...). class_names turns a predicted number back into
-# a real name again at the end.
+# turn each bean name into a number - networks only understand numbers
 class_names = sorted(train_data[LABEL_COLUMN].unique())
 name_to_number = {name: number for number, name in enumerate(class_names)}
  
@@ -39,15 +35,12 @@ NUMBER_OF_FEATURES = attributes_train_full.shape[1]
 NUMBER_OF_CLASSES = len(class_names)
  
  
-# ---- Put every measurement column on the same scale (mean 0, spread 1)
-# - networks train much better this way. ----
+# scale every column to mean 0, spread 1 - networks train better this way
 def standardise(attributes, mean, std):
     return (attributes - mean) / std
  
  
-# A Dataset just says how many rows it has, and hands back one
-# (features, label) pair for a row number. DataLoader wraps it to serve
-# shuffled MINI-BATCHES during training.
+# wraps our beans so DataLoader can serve them as shuffled mini-batches
 class BeanDataset(Dataset):
     def __init__(self, attributes, bean_type):
         self.attributes = torch.tensor(attributes, dtype=torch.float32)
@@ -60,11 +53,8 @@ class BeanDataset(Dataset):
         return self.attributes[index], self.bean_type[index]
  
  
-# ---- Our network: input -> hidden layer -> output.
-# BatchNorm keeps the numbers flowing through training steady.
-# Dropout randomly switches off some hidden neurons DURING TRAINING ONLY
-# so the network can't just memorise the beans it has seen - that's our
-# regularization (use_dropout=False gives the plain baseline). ----
+# input -> hidden layer -> output. BatchNorm steadies training.
+# Dropout (only during training) is our regularization technique.
 class BeanNetwork(nn.Module):
     def __init__(self, use_dropout):
         super().__init__()
@@ -82,12 +72,8 @@ class BeanNetwork(nn.Module):
         return self.output_layer(x)
  
  
-# ---- Our own loss function, written by hand instead of using
-# nn.CrossEntropyLoss. For every bean: turn its scores into probabilities
-# with softmax, look up the probability it gave the CORRECT answer, and
-# take -log of that (a confident correct guess gives a small loss, a
-# confident wrong guess gives a huge one). Then average over the whole
-# batch, so the loss doesn't just look bigger because the batch is bigger. ----
+# our own loss function: -log(probability given to the correct answer),
+# averaged over the batch
 def cross_entropy_loss(outputs, labels):
     probabilities = torch.softmax(outputs, dim=1)
     total_loss = 0.0
@@ -97,16 +83,14 @@ def cross_entropy_loss(outputs, labels):
     return total_loss / len(labels)
  
  
-# ---- Trains one network on the given beans. Returns the trained model,
-# the loss for every epoch (for the loss plot), and the mean/std used to
-# standardise the data (so new beans can be standardised the same way). ----
+# trains one network, returns the model, its loss per epoch, and the
+# mean/std used to scale the data
 def train_network(attributes_train, bean_type_train, use_dropout):
     mean = attributes_train.mean(axis=0)
     std = attributes_train.std(axis=0)
     attributes_train = standardise(attributes_train, mean, std)
  
-    # drop_last=True skips a tiny leftover batch at the end of an epoch,
-    # which can crash Batch Normalization if it only has 1 bean in it
+    # drop_last avoids a tiny last batch, which can crash BatchNorm
     loader = DataLoader(
         BeanDataset(attributes_train, bean_type_train),
         batch_size=BATCH_SIZE, shuffle=True, drop_last=True
@@ -132,8 +116,6 @@ def train_network(attributes_train, bean_type_train, use_dropout):
             loss.backward()
             optimizer.step()
  
-            # add up the loss from every mini-batch, so we can log one
-            # loss number for the whole epoch
             total_loss += loss.item() * len(batch_labels)
             total_rows += len(batch_labels)
  
@@ -142,8 +124,8 @@ def train_network(attributes_train, bean_type_train, use_dropout):
     return model, losses, mean, std
  
  
-# ---- Trains a network and uses it to guess the test beans. This is the
-# "make_predictions" style function cross_validate (below) can call. ----
+# trains a network then predicts attributes_test - the "make_predictions"
+# function cross_validate (below) calls
 def network_predictions(attributes_train, bean_type_train, attributes_test, use_dropout):
     model, losses, mean, std = train_network(attributes_train, bean_type_train, use_dropout)
  
@@ -166,9 +148,8 @@ def regularized_predictions(attributes_train, bean_type_train, attributes_test):
     return network_predictions(attributes_train, bean_type_train, attributes_test, use_dropout=True)
  
  
-# ---- Our own cross-validation, same idea as forest.py's: split the
-# beans into k parts, train on k-1, test on the part left out, repeat
-# for every part, then average the balanced accuracy. ----
+# our own cross-validation (no sklearn CV functions) - same idea as
+# forest.py: split into k folds, train on k-1, test on the rest, repeat
 def cross_validate(attributes, bean_type, k, make_predictions):
     row_numbers = list(range(len(attributes)))
     np.random.shuffle(row_numbers)
@@ -190,8 +171,7 @@ def cross_validate(attributes, bean_type, k, make_predictions):
 np.random.seed(0)
 torch.manual_seed(0)
  
-# ---- Hyperparameter check: try two learning rates, reusing the SAME
-# cross_validate function - same trick as comparing the tree and forest. ----
+# hyperparameter check: try two learning rates
 print("learning rate 0.01:")
 LEARNING_RATE = 0.01
 print("  balanced accuracy =", round(cross_validate(
@@ -201,10 +181,9 @@ print("learning rate 0.001:")
 LEARNING_RATE = 0.001
 print("  balanced accuracy =", round(cross_validate(
     attributes_train_full, bean_type_train_full, k=3, make_predictions=regularized_predictions), 4))
-# Keeping LEARNING_RATE = 0.001 from here on.
+# keeping 0.001 from here on
  
-# ---- Regularization check: baseline (no dropout) vs our regularized
-# network (with dropout) ----
+# regularization check: baseline (no dropout) vs with dropout
 print("baseline (no dropout):")
 print("  balanced accuracy =", round(cross_validate(
     attributes_train_full, bean_type_train_full, k=3, make_predictions=baseline_predictions), 4))
@@ -213,24 +192,23 @@ print("regularized (with dropout):")
 print("  balanced accuracy =", round(cross_validate(
     attributes_train_full, bean_type_train_full, k=3, make_predictions=regularized_predictions), 4))
  
-# ---- Train the FINAL network on all the training data, using dropout ----
+# train the final network on all the training data
 final_model, final_losses, mean, std = train_network(attributes_train_full, bean_type_train_full, use_dropout=True)
  
-# Save the trained weights, then load them into a brand new model, to
-# prove saving/loading with state_dict works.
+# save + reload the weights, to show state_dict works
 torch.save(final_model.state_dict(), "network_weights.pt")
 loaded_model = BeanNetwork(use_dropout=True).to(device)
 loaded_model.load_state_dict(torch.load("network_weights.pt"))
 loaded_model.eval()
  
-# ---- Visualise the loss going down while it trained ----
+# save a picture of the loss going down while training
 plt.plot(final_losses)
 plt.xlabel("Epoch")
 plt.ylabel("Training loss")
 plt.savefig("training_loss.png")
 print("Saved training_loss.png")
  
-# ---- Predict the mystery test beans and save the submission file ----
+# predict the mystery test beans and save the submission file
 test_attributes = standardise(attributes_test_full, mean, std)
 test_tensor = torch.tensor(test_attributes, dtype=torch.float32).to(device)
  
