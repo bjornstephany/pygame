@@ -1,4 +1,4 @@
-# Cross validation accuracy = 0.9237
+# Cross validation Balance accuracy = 92.37%
  
 import pandas as pd
 import numpy as np
